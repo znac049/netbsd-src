@@ -17,6 +17,7 @@ device-major	sd		char 8   block 4	sd
 device-major	ld		char 9   block 2	ld
 
 device-major	com		char 12			com
+device-major	duart	char 13			duart
 
 device-major	ccd		char 17  block 5	ccd
 device-major	cd		char 18  block 8	cd

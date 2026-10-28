@@ -6,5 +6,6 @@
 #include <m68k/types.h>
 
 #define	__HAVE_DEVICE_REGISTER
+#define	__HAVE_M68K_INTR_VECTORED
 
 #endif

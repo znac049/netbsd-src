@@ -95,10 +95,15 @@ wdc_fdt_attach(device_t parent, device_t self, void *aux)
 		return;
 	}
 
-	if (fdtbus_get_reg(phandle, 1, &ctl_addr, &ctl_size) != 0) {
-		aprint_error(": couldn't get control registers\n");
-		return;
-	}
+	/*
+	 * The control block (CS1: device control / alternate status)
+	 * is optional; some simple interfaces, e.g. 8-bit CompactFlash
+	 * in True IDE mode on homebrew boards, only decode the command
+	 * block.  Without it we can't do a software reset or mask the
+	 * interrupt, so tell wdc(4) not to touch it.
+	 */
+	const bool have_ctl =
+	    fdtbus_get_reg(phandle, 1, &ctl_addr, &ctl_size) == 0;
 
 	error = bus_space_map(wdr->cmd_iot, cmd_addr, cmd_size, 0,
 			      &wdr->cmd_baseioh);
@@ -108,12 +113,18 @@ wdc_fdt_attach(device_t parent, device_t self, void *aux)
 		return;
 	}
 
-	error = bus_space_map(wdr->ctl_iot, ctl_addr, ctl_size, 0,
-			      &wdr->ctl_ioh);
-	if (error) {
-		aprint_error(": couldn't map control registers (error=%d)\n",
-		    error);
-		return;
+	if (have_ctl) {
+		error = bus_space_map(wdr->ctl_iot, ctl_addr, ctl_size, 0,
+				      &wdr->ctl_ioh);
+		if (error) {
+			aprint_error(": couldn't map control registers "
+			    "(error=%d)\n", error);
+			return;
+		}
+	} else {
+		/* Never accessed with WDC_CAPABILITY_NO_AUXCTL. */
+		wdr->ctl_ioh = wdr->cmd_baseioh;
+		sc->sc_wdcdev.cap |= WDC_CAPABILITY_NO_AUXCTL;
 	}
 
 	bus_size_t data_regsize = 2;
