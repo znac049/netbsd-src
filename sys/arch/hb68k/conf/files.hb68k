@@ -140,12 +140,12 @@ file	arch/hb68k/wrap030/wrap030_timer.c	wraptmr
 ##
 
 defflag opt_hb68k_config.h	CONFIG_MACH_SBC3
-file	arch/hb68k/sbc3/sbc3_machdep.c		config_mach_sbc3
+file	arch/hb68k/sbc3/sbc3_machdep_claude.c		config_mach_sbc3
 
 device	pittmr
 attach	pittmr at fdt
-file	arch/hb68k/sbc3/mc68230_timer.c		pittmr
+file	arch/hb68k/sbc3/mc68230_timer_claude.c		pittmr
 
 device	duart: tty
 attach	duart at fdt
-file	arch/hb68k/sbc3/mc68681_duart.c		duart
+file	arch/hb68k/sbc3/mc68681_duart_claude.c		duart

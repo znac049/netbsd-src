@@ -1,0 +1,135 @@
+/*
+ * SBC3: homebrew 68030 single-board computer.
+ *
+ */
+
+/dts-v1/;
+
+/*
+ * The first 8 bytes of RAM are overlaid by the ROM's reset vectors.
+ * Keep the whole first page out of the VM system's hands.  The kernel
+ * itself loads at $2000, above this.
+ */
+/memreserve/ 0x00000000 0x00001000;
+
+/ {
+	interrupt-parent = <&intc>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	model = "SBC3";
+	compatible = "homebrew,sbc3";
+
+	chosen {
+		/*
+		 * -a ask for root device, -s single user,
+		 * -v verbose, -x debug autoconfig.
+		 * Trim these once the board boots reliably.
+		 */
+		bootargs = "-asvx";
+		stdout-path = "serial0:230400n8";
+		netbsd,hardclock = "timer0";
+	};
+
+	aliases {
+		ata0 = "/obio/ata@ae0000";
+		serial0 = "/obio/duart@ad0001";
+		timer0 = "/obio/timer@af0001";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			compatible = "motorola,68030";
+			device_type = "cpu";
+			reg = <0>;
+			clock-frequency = <40000000>;
+		};
+	};
+
+	clocks {
+		/* External clock feeding the 68230. */
+		pit_osc: osc10M_clk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <10000000>;
+		};
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x400000>;			/* 8 MB */
+	};
+
+	intc: interrupt-controller {
+		/*
+		 * Interrupt cells:
+		 * - Interrupt priority level (1-6)
+		 * - Interrupt vector (0 == auto-vector)
+		 */
+		compatible = "motorola,68000-generic-interrupts";
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	obio {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/*
+		 * XR68C681 on the odd byte lane: registers at
+		 * $AD0001, $AD0003, ... $AD001F.
+		 *
+		 * For an MC68681 with a 3.6864 MHz crystal instead, use
+		 * compatible = "motorola,mc68681" and
+		 * clock-frequency = <3686400>.
+		 */
+		duart@ad0001 {
+			compatible = "exar,xr68c681";
+			reg = <0x00ad0001 0x20>;
+			reg-shift = <1>;
+			clock-frequency = <7372800>;
+			/* IPL 2, auto-vectored. Must be <= 5. */
+			interrupts = <2 0x50>;
+			motorola,console-channel = <0>;	/* channel A */
+		};
+
+		/*
+		 * CompactFlash in 8-bit True IDE mode.  CF A0-A2 are
+		 * driven by CPU A1-A3, so the task-file registers are
+		 * at $AE0000, $AE0002, ... $AE000E.  CS1 (device
+		 * control / alternate status) isn't decoded, so there
+		 * is no second "reg" entry, and INTRQ isn't wired, so
+		 * there is no "interrupts" property: the driver polls.
+		 */
+		ata@ae0000 {
+			compatible = "ata-generic";
+			reg = <0x00ae0000 0x10>;
+			reg-shift = <1>;
+			ata-generic,use16bit;
+			/* interrupts = <4 0>;*/		/* IPL 4, auto-vectored */
+		};
+
+		/*
+		 * MC68230 on the odd byte lane: registers at
+		 * $AF0001, $AF0003, ... $AF0035.
+		 */
+		timer@af0001 {
+			compatible = "motorola,mc68230-timer";
+			reg = <0x00af0001 0x40>;
+			reg-shift = <1>;
+			clocks = <&pit_osc>;
+			/*
+			 * 0 if the 10 MHz clock drives the CLK pin
+			 * (counts at 10 MHz / 32 = 312.5 kHz); 3 if it
+			 * drives TIN (counts at 10 MHz, no prescaler).
+			 */
+			motorola,clock-mode = <0>;
+			/* IPL 1, auto-vectored, TOUT wired to IRQ1. */
+			interrupts = <1 0x40>;
+		};
+	};
+};
