@@ -2,9 +2,7 @@
 #
 # SBC3 machine description file
 #
-# Homebrew 68030 SBC: 40 MHz 68030, 8 MB RAM at $0, ROM at $C00000,
-# XR68C681 (or MC68681) DUART at $AD0001, CompactFlash at $AE0000,
-# MC68230 PI/T at $AF0001.
+# https://mega-micros.co.uk/index_68030.htm
 #
 
 include 	"arch/hb68k/conf/std.hb68k"
@@ -13,16 +11,10 @@ options 	CONFIG_MACH_SBC3
 options 	CONFIG_FDT_BOOTSTRAP
 options 	CONFIG_STATIC_DEVICE_TREE
 makeoptions	STATIC_DEVICE_TREE="${HB68K}/sbc3/sbc3.dts"
+makeoptions	TEXTADDR=2000
 
-# The kernel links at the hb68k default of $2000, clear of the ROM
-# vector overlay at $0-$7.  The ROM monitor must load the raw binary
-# (netbsd.bin) at $2000 and jump to $2000.
-#makeoptions	TEXTADDR=2000
-
-# Reserve symbol space and copy the symbol table into it, since the
-# ROM monitor won't load symbols for us.  Costs ~340 KB of RAM; leave
-# it off while SBC3 is short of memory (DDB then shows bare addresses).
-#makeoptions	COPY_SYMTAB=1
+# Reserve symbol space and copy the symbol table into it
+# BG makeoptions	COPY_SYMTAB=1
 
 #options 	INCLUDE_CONFIG_FILE	# embed config file in kernel binary
 
@@ -35,17 +27,31 @@ options 	DDB		# in-kernel debugger
 #options 	LOCKDEBUG
 #options 	DEBUG
 
+#options KTRACE
+
 options 	PIPE_SOCKETPAIR	# smaller, but slower pipe(2)
 
-# No 68881/68882 on SBC3: emulate the FPU in the kernel.
+# Soft FPU.
 options 	FPU_EMULATE
 
+# No need at this point for FAT
 file-system 	FFS		# Berkeley Fast File System
-#file-system 	MSDOSFS		# MS-DOS File System (FAT)
+# BG file-system 	MSDOSFS		# MS-DOS File System (FAT)
 options 	FFS_NO_SNAPSHOT	# No FFS snapshot support
 
 options 	INET		# IPv4
+#options 	INET6		# IPv6
+#options 	IPSEC		# IP security
+#options 	IPSEC_DEBUG	# debug for IP security
+#options 	GATEWAY		# IP packet forwarding
+#options 	TCP_DEBUG	# Record last TCP_NDEBUG packets with SO_DEBUG
 
+# Shared memory options
+#options 	SYSVMSG		# System V-like message queues
+#options 	SYSVSEM		# System V-like semaphores
+#options 	SYSVSHM		# System V-like memory sharing
+
+# -----------------------------------------------------------------
 # Memory savers for a 4-8 MB machine: no loadable modules, no RAM
 # disk, and a smaller buffer cache (default is 15% of RAM).
 no options 	MODULAR
@@ -54,6 +60,7 @@ no pseudo-device	md
 no options 	MEMORY_DISK_HOOKS
 no options 	MEMORY_DISK_DYNAMIC
 options 	BUFCACHE=5
+# -----------------------------------------------------------------
 
 ## "generic" boot (put root on boot device)
 config netbsd		root on ? type ?
@@ -65,10 +72,10 @@ pseudo-device	ksyms			# /dev/ksyms
 # Generic m68k interrupts.
 genintc*	at fdt? pass 2
 
-# System timer (MC68230 PI/T)
+# System timer
 pittmr*		at fdt? pass 3
 
-# On-board serial ports (MC68681 / XR68C681 DUART)
+# On-board serial ports
 duart*		at fdt? pass 5
 
 # CompactFlash, 8-bit True IDE, polled
