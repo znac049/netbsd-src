@@ -144,7 +144,11 @@ file	arch/hb68k/sbc3/sbc3_machdep.c		config_mach_sbc3
 
 device	pittmr
 attach	pittmr at fdt
-file	arch/hb68k/sbc3/mc68230_timer.c		pittmr
+file    arch/hb68k/sbc3/pit_timer.c     pittmr
+
+device	aitmr
+attach	aitmr at fdt
+file    arch/hb68k/sbc3/mc68230_timer.c     aitmr
 
 device	duart: tty
 attach	duart at fdt

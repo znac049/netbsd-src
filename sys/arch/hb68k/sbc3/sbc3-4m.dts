@@ -1,0 +1,96 @@
+/dts-v1/;
+
+/ {
+	interrupt-parent = <&intc>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	model = "SBC3";
+	compatible = "homebrew,sbc3";
+
+	chosen {
+		bootargs = "-vx root=dk0";
+		stdout-path = "serial0:230400n8";
+		netbsd,hardclock = "timer0"; /* Is this needed? */
+	};
+
+	aliases {
+		ata0 = "/obio/ata@ae0000";
+
+		serial0 = "/obio/duart@ad0001";
+
+		timer0 = "/obio/timer@af0001";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			compatible = "motorola,68030";
+			device_type = "cpu";
+			reg = <0>;
+			clock-frequency = <40000000>;
+		};
+	};
+
+	clocks {
+		pit_osc: osc10M_clk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <10000000>;
+		};
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x400000>;   			/* 4 MB */
+	};
+
+	intc: interrupt-controller {
+		/*
+		 * Interrupt cells:
+		 * - Interrupt priority level (1-7)
+		 * - Interrupt vector (0 == auto-vector)
+		 */
+		compatible = "motorola,68000-generic-interrupts";
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	obio {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		duart@ad0001 {
+			compatible = "exar,xr68c681";
+			reg = <0x00ad0001 0x20>;
+			reg-shift = <1>;
+			clock-frequency = <7372800>;
+			interrupts = <2 0x50>;
+			motorola,console-channel = <0>; /* Is this needed??? */
+		};
+
+		ata@ae0000 {
+			compatible = "ata-generic";
+			reg = <0x00ae0000 0x10>;
+			reg-shift = <1>;
+			ata-generic,use16bit;
+			/*
+			 * Interrupts have to be disabled for the moment. I'm
+			 * working on a board mod to fix this
+			 */
+			#interrupts = <4 0>;
+		};
+
+		timer@af0001 {
+			compatible = "znac049,mc68230-timer";
+			reg = <0x00af0001 0x40>;
+			reg-shift = <1>;
+			clocks = <&pit_osc>;
+			/* IPL 1, auto-vectored, TOUT wired to IRQ1. */
+			interrupts = <1 0x40>;
+		};
+	};
+};

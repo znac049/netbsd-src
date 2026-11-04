@@ -124,7 +124,7 @@ pittmr_us_to_ticks(struct pittmr_softc *sc, unsigned int interval_us)
 		    interval_us, (unsigned long long)ticks);
 	}
 
-	return (uint32_t)ticks;
+	return (uint32_t)ticks - 1;
 }
 
 static void

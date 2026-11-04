@@ -1,11 +1,5 @@
 /dts-v1/;
 
-/* 
- * Rom overlays memory at 0-7. Ask Steve if there's a
- * way around it, but for now...
- */
-/memreserve/ 0x00000000 0x00001000;
-
 / {
 	interrupt-parent = <&intc>;
 	#address-cells = <1>;
@@ -15,7 +9,7 @@
 	compatible = "homebrew,sbc3";
 
 	chosen {
-		bootargs = "-asvx";
+		bootargs = "-vx root=dk0";
 		stdout-path = "serial0:230400n8";
 		netbsd,hardclock = "timer0"; /* Is this needed? */
 	};
@@ -50,9 +44,8 @@
 
 	memory@0 {
 		device_type = "memory";
-		reg = <0x0 0x400000>;			/* 4 MB !! */
-		/* reg = <0x0 0x800000>; */			/* 8 MB */
-		/* reg = <0x0 0x1000000>; */		/* 16 MB */
+		reg = <0x0 0x800000>,   			/* 8 MB */
+			  <0x2000000 0x2000000>;		/* Additional 32MB (in my dreams) */
 	};
 
 	intc: interrupt-controller {
@@ -102,7 +95,7 @@
 			 * (counts at 10 MHz / 32 = 312.5 kHz); 3 if it
 			 * drives TIN (counts at 10 MHz, no prescaler).
 			 */
-			motorola,clock-mode = <0>;
+			/* motorola,clock-mode = <0>; */
 			/* IPL 1, auto-vectored, TOUT wired to IRQ1. */
 			interrupts = <1 0x40>;
 		};
