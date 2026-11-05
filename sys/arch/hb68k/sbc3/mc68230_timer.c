@@ -91,7 +91,7 @@ __KERNEL_RCSID(0, "$NetBSD$");
 
 #define	PIT_COUNT_MAX		0x00ffffffU
 
-struct pittmr_softc {
+struct aitmr_softc {
 	device_t	sc_dev;
 	bus_space_tag_t	sc_st;
 	bus_space_handle_t sc_sh;
@@ -114,7 +114,7 @@ static const struct device_compatible_entry compat_data[] = {
 };
 
 static uint32_t
-pittmr_us_to_ticks(struct pittmr_softc *sc, unsigned int interval_us)
+aitmr_us_to_ticks(struct aitmr_softc *sc, unsigned int interval_us)
 {
 	const uint64_t ticks =
 	    ((uint64_t)sc->sc_freq * interval_us + 500000) / 1000000;
@@ -128,17 +128,17 @@ pittmr_us_to_ticks(struct pittmr_softc *sc, unsigned int interval_us)
 }
 
 static void
-pittmr_stop(struct pittmr_softc *sc)
+aitmr_stop(struct aitmr_softc *sc)
 {
 	PIT_WRITE(sc, PIT_TCR, sc->sc_tcr & ~TCR_ENABLE);
 	PIT_WRITE(sc, PIT_TSR, TSR_ZDS);
 }
 
 static int
-pittmr_init(struct clock_if *clk, int (*intrfunc)(void *))
+aitmr_init(struct clock_if *clk, int (*intrfunc)(void *))
 {
-	struct pittmr_softc *sc =
-	    container_of(clk, struct pittmr_softc, sc_clkif);
+	struct aitmr_softc *sc =
+	    container_of(clk, struct aitmr_softc, sc_clkif);
 	int phandle = devhandle_to_of(device_handle(sc->sc_dev));
 	char intrstr[128];
 
@@ -162,13 +162,13 @@ pittmr_init(struct clock_if *clk, int (*intrfunc)(void *))
 }
 
 static int
-pittmr_arm(struct clock_if *clk, unsigned int interval_us)
+aitmr_arm(struct clock_if *clk, unsigned int interval_us)
 {
-	struct pittmr_softc *sc =
-	    container_of(clk, struct pittmr_softc, sc_clkif);
-	const uint32_t ticks = pittmr_us_to_ticks(sc, interval_us);
+	struct aitmr_softc *sc =
+	    container_of(clk, struct aitmr_softc, sc_clkif);
+	const uint32_t ticks = aitmr_us_to_ticks(sc, interval_us);
 
-	pittmr_stop(sc);
+	aitmr_stop(sc);
 
 	PIT_WRITE(sc, PIT_CPRH, (ticks >> 16) & 0xff);
 	PIT_WRITE(sc, PIT_CPRM, (ticks >> 8) & 0xff);
@@ -181,10 +181,10 @@ pittmr_arm(struct clock_if *clk, unsigned int interval_us)
 }
 
 static void
-pittmr_intr(struct clock_if *clk)
+aitmr_intr(struct clock_if *clk)
 {
-	struct pittmr_softc *sc =
-	    container_of(clk, struct pittmr_softc, sc_clkif);
+	struct aitmr_softc *sc =
+	    container_of(clk, struct aitmr_softc, sc_clkif);
 
 	/*
 	 * The counter has already reloaded itself from CPR; we only
@@ -194,16 +194,16 @@ pittmr_intr(struct clock_if *clk)
 }
 
 static void
-pittmr_disarm(struct clock_if *clk)
+aitmr_disarm(struct clock_if *clk)
 {
-	struct pittmr_softc *sc =
-	    container_of(clk, struct pittmr_softc, sc_clkif);
+	struct aitmr_softc *sc =
+	    container_of(clk, struct aitmr_softc, sc_clkif);
 
-	pittmr_stop(sc);
+	aitmr_stop(sc);
 }
 
 static int
-pittmr_match(device_t parent, cfdata_t cf, void *aux)
+aitmr_match(device_t parent, cfdata_t cf, void *aux)
 {
 	struct fdt_attach_args * const faa = aux;
 
@@ -211,9 +211,9 @@ pittmr_match(device_t parent, cfdata_t cf, void *aux)
 }
 
 static void
-pittmr_attach(device_t parent, device_t self, void *aux)
+aitmr_attach(device_t parent, device_t self, void *aux)
 {
-	struct pittmr_softc * const sc = device_private(self);
+	struct aitmr_softc * const sc = device_private(self);
 	struct fdt_attach_args * const faa = aux;
 	const int phandle = faa->faa_phandle;
 	u_int specifier[2];
@@ -275,7 +275,7 @@ pittmr_attach(device_t parent, device_t self, void *aux)
 	sc->sc_tcr |= sc->sc_vector ? TCR_TOUT_VEC_IRQ : TCR_TOUT_AUTO_IRQ;
 
 	/* Make sure the timer is stopped and quiet. */
-	pittmr_stop(sc);
+	aitmr_stop(sc);
 	if (sc->sc_vector) {
 		PIT_WRITE(sc, PIT_TIVR, sc->sc_vector);
 	}
@@ -284,12 +284,12 @@ pittmr_attach(device_t parent, device_t self, void *aux)
 	aprint_normal(": MC68230 timer, %u Hz count rate\n", sc->sc_freq);
 
 	sc->sc_clkif.clk_dev = self;
-	sc->sc_clkif.clk_init = pittmr_init;
-	sc->sc_clkif.clk_arm = pittmr_arm;
-	sc->sc_clkif.clk_intr = pittmr_intr;
-	sc->sc_clkif.clk_disarm = pittmr_disarm;
+	sc->sc_clkif.clk_init = aitmr_init;
+	sc->sc_clkif.clk_arm = aitmr_arm;
+	sc->sc_clkif.clk_intr = aitmr_intr;
+	sc->sc_clkif.clk_disarm = aitmr_disarm;
 	clock_attach(&sc->sc_clkif);
 }
 
-CFATTACH_DECL_NEW(pittmr, sizeof(struct pittmr_softc),
-    pittmr_match, pittmr_attach, NULL, NULL);
+CFATTACH_DECL_NEW(aitmr, sizeof(struct aitmr_softc),
+    aitmr_match, aitmr_attach, NULL, NULL);
