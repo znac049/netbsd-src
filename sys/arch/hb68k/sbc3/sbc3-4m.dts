@@ -9,9 +9,9 @@
 	compatible = "homebrew,sbc3";
 
 	chosen {
-		bootargs = "-vx root=dk0";
+		bootargs = "-vsx root=dk0";		/* With only 4MB, we can only go single user */
 		stdout-path = "serial0:230400n8";
-		netbsd,hardclock = "timer0"; /* Is this needed? */
+		netbsd,hardclock = "timer0"; 	/* Is this needed? */
 	};
 
 	aliases {

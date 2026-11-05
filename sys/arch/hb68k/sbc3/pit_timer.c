@@ -57,6 +57,7 @@ struct pit_timer_softc {
 #define PIT_TCR   		0x10
 #define   TCR_ENABLE  		0x01
 #define   TCR_TOUT_IS_IRQ 	0xa0
+#define   TCR_TOUT_IRQ_OFF	0x80
 #define PIT_TIVR		0x11
 #define PIT_CPRH  		0x13
 #define PIT_CPRM  		0x14
@@ -126,8 +127,8 @@ pit_timer_arm(struct clock_if *clk, unsigned int interval_us)
 	    container_of(clk, struct pit_timer_softc, sc_clkif);
 	const uint32_t ticks = pit_timer_us_to_ticks(sc, interval_us);
 
-	REG_WRITE(sc, PIT_TCR, 0);				// Stop
-	REG_WRITE(sc, PIT_TSR, TSR_ZDFLAG);		// Clear Zero Detect - just in case
+	REG_WRITE(sc, PIT_TCR, TCR_TOUT_IRQ_OFF);	// Stop - but leave as IRQ line
+	REG_WRITE(sc, PIT_TSR, TSR_ZDFLAG);			// Clear Zero Detect - just in case
 
 	REG_WRITE(sc, PIT_CPRH, (uint8_t)(ticks >> 16));
 	REG_WRITE(sc, PIT_CPRM, (uint8_t)(ticks >> 8));
@@ -213,8 +214,8 @@ pit_timer_attach(device_t parent, device_t self, void *aux)
 	}
 
 	/* Make sure the timer is disabled. */
-	REG_WRITE(sc, PIT_TCR, 0);
-	REG_WRITE(sc, PIT_TSR, TSR_ZDFLAG);		// Clear Zero Detect - just in case
+	REG_WRITE(sc, PIT_TCR, TCR_TOUT_IRQ_OFF);	// Stop - but leave as IRQ line
+	REG_WRITE(sc, PIT_TSR, TSR_ZDFLAG);			// Clear Zero Detect - just in case
 
 	if (sc->sc_vector) {
 		REG_WRITE(sc, PIT_TIVR, sc->sc_vector);
