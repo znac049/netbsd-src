@@ -95,7 +95,7 @@
 			 * drives TIN (counts at 10 MHz, no prescaler).
 			 */
 			motorola,clock-mode = <0>;
-			/* IPL 1, auto-vectored, TOUT wired to IRQ1. */
+			/* IPL 1, vectored, TOUT wired to IRQ1. */
 			interrupts = <1 0x40>;
 		};
 	};

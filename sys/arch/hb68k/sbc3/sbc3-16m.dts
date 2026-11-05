@@ -90,7 +90,7 @@
 			reg = <0x00af0001 0x40>;
 			reg-shift = <1>;
 			clocks = <&pit_osc>;
-			/* IPL 1, auto-vectored, TOUT wired to IRQ1. */
+			/* IPL 1, vectored, TOUT wired to IRQ1. */
 			interrupts = <1 0x40>;
 		};
 	};

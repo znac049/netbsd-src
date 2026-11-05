@@ -86,7 +86,7 @@
 		};
 
 		timer@af0001 {
-			compatible = "motorola,mc68230-timer";
+			compatible = "znac049,mc68230-timer";
 			reg = <0x00af0001 0x40>;
 			reg-shift = <1>;
 			clocks = <&pit_osc>;
@@ -96,7 +96,7 @@
 			 * drives TIN (counts at 10 MHz, no prescaler).
 			 */
 			/* motorola,clock-mode = <0>; */
-			/* IPL 1, auto-vectored, TOUT wired to IRQ1. */
+			/* IPL 1, vectored, TOUT wired to IRQ1. */
 			interrupts = <1 0x40>;
 		};
 	};

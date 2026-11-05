@@ -73,7 +73,7 @@ pseudo-device	ksyms			# /dev/ksyms
 genintc*	at fdt? pass 2
 
 # System timer
-pittmr*		at fdt? pass 3
+aitmr*		at fdt? pass 3
 
 # On-board serial ports
 duart*		at fdt? pass 5
