@@ -14,7 +14,7 @@ makeoptions	STATIC_DEVICE_TREE="${HB68K}/sbc3/sbc3-8m.dts"
 makeoptions	TEXTADDR=2000
 
 # Reserve symbol space and copy the symbol table into it
-# BG makeoptions	COPY_SYMTAB=1
+makeoptions	COPY_SYMTAB=1
 
 #options 	INCLUDE_CONFIG_FILE	# embed config file in kernel binary
 
@@ -50,17 +50,6 @@ options 	INET		# IPv4
 #options 	SYSVMSG		# System V-like message queues
 #options 	SYSVSEM		# System V-like semaphores
 #options 	SYSVSHM		# System V-like memory sharing
-
-# -----------------------------------------------------------------
-# Memory savers for a 4-8 MB machine: no loadable modules, no RAM
-# disk, and a smaller buffer cache (default is 15% of RAM).
-no options 	MODULAR
-no options 	MODULAR_DEFAULT_AUTOLOAD
-no pseudo-device	md
-no options 	MEMORY_DISK_HOOKS
-no options 	MEMORY_DISK_DYNAMIC
-options 	BUFCACHE=5
-# -----------------------------------------------------------------
 
 ## "generic" boot (put root on boot device)
 config netbsd		root on ? type ?
