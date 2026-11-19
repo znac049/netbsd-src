@@ -205,8 +205,6 @@ pit_timer_attach(device_t parent, device_t self, void *aux)
 	}
 	sc->sc_vector = (uint8_t)be32toh(int_inf[1]);
 	
-	aprint_normal_dev(sc->sc_dev, "will set TIVR to %02x\n", sc->sc_vector);
-	
 	error = bus_space_map(sc->sc_st, addr, size, 0, &sc->sc_sh);
 	if (error) {
 		aprint_error(": couldn't map registers (error=%d)\n", error);
@@ -230,7 +228,6 @@ pit_timer_attach(device_t parent, device_t self, void *aux)
 	sc->sc_freq = clk_get_rate(clk) / 32;		// 32 is for the prescaler
 
 	aprint_naive("\n");
-	aprint_normal(": frequency %u Hz\n", sc->sc_freq);
 
 	sc->sc_clkif.clk_dev = self;
 	sc->sc_clkif.clk_init = pit_timer_init;
