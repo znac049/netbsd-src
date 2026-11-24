@@ -45,7 +45,7 @@
 	memory@0 {
 		device_type = "memory";
 		reg = <0x0 0x800000>,   			/* 8 MB */
-			  <0x2000000 0x0800000>;		/* Additional 8MB (in my dreams) */
+			  <0x10000000 0x0800000>;		/* Additional 8MB (in my dreams) */
 	};
 
 	intc: interrupt-controller {

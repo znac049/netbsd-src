@@ -59,11 +59,18 @@ __KERNEL_RCSID(0, "$NetBSD$");
 #include <uvm/uvm_extern.h>
 
 /*
- * The I/O window: covers the DUART at $AD0000, the CompactFlash
- * interface at $AE0000 and the PI/T at $AF0000.  Grow this if you add devices elsewhere in $A00000-$BFFFFF.
+ * The I/O window:
+ *   - RAMDAC at $A90000 					- optional: ACRTC3 card
+ *   - ACRTC (hd63484) at $AA0000			- optional: ACRTC3 card
+ *   - Hex display card at $AB0000			- optional: Hex Display card
+ *   - DUART at $AD0000						- on mainboard
+ *   - CompactFlash interface at $AE0000	- on mainboard
+ *   - PI/T at $AF0000.  					- on mainboard
+ *
+ * Grow this if you add devices elsewhere in $A00000-$BFFFFF.
  */
-#define	SBC3_IO_BASE	0x00ad0000
-#define	SBC3_IO_SIZE	0x00030000
+#define	SBC3_IO_BASE	0x00a90000
+#define	SBC3_IO_SIZE	0x00070000
 
 /* Filled in by pmap_bootstrap1() with the VA of the I/O window. */
 vaddr_t	sbc3_io_va;
